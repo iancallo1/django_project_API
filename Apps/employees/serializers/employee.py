@@ -1,28 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Employee, Department, Position
+from ..models import Employee
 import time
-import random
 
 User = get_user_model()
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Department
-        fields = ['id', 'name', 'description']
-
-class PositionSerializer(serializers.ModelSerializer):
-    department = DepartmentSerializer(read_only=True)
-    department_id = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.all(),
-        source='department',
-        write_only=True
-    )
-
-    class Meta:
-        model = Position
-        fields = ['id', 'name', 'department', 'department_id', 'description']
 
 class EmployeeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only=True)
@@ -38,12 +20,19 @@ class EmployeeSerializer(serializers.ModelSerializer):
     )
     first_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
+    
+    # Read-only fields for user information
+    user_username = serializers.CharField(source='user.username', read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_first_name = serializers.CharField(source='user.first_name', read_only=True)
+    user_last_name = serializers.CharField(source='user.last_name', read_only=True)
 
     class Meta:
         model = Employee
         fields = [
             'id', 'username', 'email', 'password', 'confirm_password',
-            'first_name', 'last_name', 'join_date', 'phone_number'
+            'first_name', 'last_name', 'join_date', 'phone_number',
+            'user_username', 'user_email', 'user_first_name', 'user_last_name'
         ]
 
     def validate(self, attrs):
@@ -69,7 +58,16 @@ class EmployeeSerializer(serializers.ModelSerializer):
         }
         validated_data.pop('confirm_password')  # Remove confirm_password as it's not needed
         
-        user = User.objects.create_user(**user_data)
-        validated_data['user'] = user
+        # Create user with proper password hashing
+        user = User.objects.create_user(
+            username=user_data['username'],
+            email=user_data['email'],
+            password=user_data['password'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            is_employee=True
+        )
         
+        # Create employee linked to the user
+        validated_data['user'] = user
         return super().create(validated_data) 

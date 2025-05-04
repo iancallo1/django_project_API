@@ -1,14 +1,6 @@
 from django.db import models
 from employees.models import Employee
-from authentication.models import User
-
-class LeaveType(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    max_days = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        return self.name
+from .leave_type import LeaveType
 
 class Leave(models.Model):
     STATUS_CHOICES = [
@@ -31,13 +23,4 @@ class Leave(models.Model):
 
     @property
     def duration(self):
-        return (self.end_date - self.start_date).days + 1
-
-class LeaveApproval(models.Model):
-    leave = models.OneToOneField(Leave, on_delete=models.CASCADE, related_name='approval')
-    approver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approved_leaves')
-    comments = models.TextField(blank=True)
-    approved_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Approval for {self.leave} by {self.approver}" 
+        return (self.end_date - self.start_date).days + 1 
