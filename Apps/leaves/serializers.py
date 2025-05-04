@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import LeaveType, Leave
 from employees.serializers import EmployeeSerializer
+from employees.models import Employee
 
 class LeaveTypeSerializer(serializers.ModelSerializer):
     class Meta:

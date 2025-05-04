@@ -18,7 +18,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Add Apps directory to Python path
-sys.path.insert(0, os.path.join(BASE_DIR, 'Apps'))
+APPS_DIR = os.path.join(BASE_DIR, 'Apps')
+sys.path.insert(0, APPS_DIR)
 
 
 # Quick-start development settings - unsuitable for production
@@ -85,7 +86,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'djangoapi3.quickstart.renderers.ClearFormBrowsableAPIRenderer',
+        'authentication.renderers.ClearFormBrowsableAPIRenderer',
     ]
 }
 
