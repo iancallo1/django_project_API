@@ -1,10 +1,20 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, routers
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from .serializers import UserSerializer
 
 User = get_user_model()
+
+class APIRootView(APIView):
+    def get(self, request, format=None):
+        return Response({
+            'employees': request.build_absolute_uri('employees/'),
+            'leave-types': request.build_absolute_uri('leave-types/'),
+            'leaves': request.build_absolute_uri('leaves/'),
+            'leave-approvals': request.build_absolute_uri('leave-approvals/'),
+        })
 
 class UserViewSet(viewsets.ModelViewSet):
     """
