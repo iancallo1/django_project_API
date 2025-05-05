@@ -14,10 +14,13 @@ A robust authentication system built with Django and Django REST Framework, prov
 
 ## Prerequisites
 
-- Python 3.x
-- Django
+- Python 3.14.0
+- Django 5.2
 - Django REST Framework
 - Virtual environment (recommended)
+
+## What I have Learned
+
 
 ## Installation
 
@@ -103,7 +106,9 @@ Run the test suite:
 ```bash
 python manage.py test authentication
 ```
-
+```bash
+python manage.py test Apps.employees.tests.test_views
+```
 ## Security Features
 
 - Password validation using Django's built-in validators
