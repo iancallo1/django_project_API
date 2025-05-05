@@ -1,25 +1,27 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.db import IntegrityError
 from ..models import Employee
-import time
 
 User = get_user_model()
 
 class EmployeeSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(write_only=True)
-    email = serializers.EmailField(write_only=True)
+    username = serializers.CharField(write_only=True, required=False)
+    email = serializers.EmailField(write_only=True, required=False)
     password = serializers.CharField(
         write_only=True,
+        required=False,
         style={'input_type': 'password'},
         validators=[validate_password]
     )
     confirm_password = serializers.CharField(
         write_only=True,
+        required=False,
         style={'input_type': 'password'}
     )
-    first_name = serializers.CharField(write_only=True)
-    last_name = serializers.CharField(write_only=True)
+    first_name = serializers.CharField(write_only=True, required=False)
+    last_name = serializers.CharField(write_only=True, required=False)
     
     # Read-only fields for user information
     user_username = serializers.CharField(source='user.username', read_only=True)
@@ -36,13 +38,20 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['confirm_password']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-
-        # Generate a unique username by appending a timestamp
-        base_username = attrs['username']
-        timestamp = str(int(time.time()))[-4:]  # Use last 4 digits of timestamp
-        attrs['username'] = f"{base_username}{timestamp}"
+        # Only validate password if it's being set
+        if 'password' in attrs and 'confirm_password' in attrs:
+            if attrs['password'] != attrs['confirm_password']:
+                raise serializers.ValidationError({"password": "Password fields didn't match."})
+        
+        # Check username uniqueness only if it's being set
+        if 'username' in attrs:
+            if User.objects.filter(username=attrs['username']).exists():
+                raise serializers.ValidationError({"username": "This username is already taken."})
+        
+        # Check email uniqueness only if it's being set
+        if 'email' in attrs:
+            if User.objects.filter(email=attrs['email']).exists():
+                raise serializers.ValidationError({"email": "This email is already registered."})
         
         return attrs
 
@@ -56,18 +65,44 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'last_name': validated_data.pop('last_name'),
             'is_employee': True,
         }
-        validated_data.pop('confirm_password')  # Remove confirm_password as it's not needed
+        validated_data.pop('confirm_password', None)  # Remove confirm_password as it's not needed
         
-        # Create user with proper password hashing
-        user = User.objects.create_user(
-            username=user_data['username'],
-            email=user_data['email'],
-            password=user_data['password'],
-            first_name=user_data['first_name'],
-            last_name=user_data['last_name'],
-            is_employee=True
-        )
+        try:
+            # Create user with proper password hashing
+            user = User.objects.create_user(
+                username=user_data['username'],
+                email=user_data['email'],
+                password=user_data['password'],
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name'],
+                is_employee=True
+            )
+            
+            # Create employee linked to the user
+            validated_data['user'] = user
+            return super().create(validated_data)
+        except IntegrityError:
+            raise serializers.ValidationError({"username": "This username is already taken."})
+
+    def update(self, instance, validated_data):
+        # Update user fields if provided
+        user = instance.user
+        if 'username' in validated_data:
+            user.username = validated_data.pop('username')
+        if 'email' in validated_data:
+            user.email = validated_data.pop('email')
+        if 'password' in validated_data:
+            user.set_password(validated_data.pop('password'))
+        if 'first_name' in validated_data:
+            user.first_name = validated_data.pop('first_name')
+        if 'last_name' in validated_data:
+            user.last_name = validated_data.pop('last_name')
         
-        # Create employee linked to the user
-        validated_data['user'] = user
-        return super().create(validated_data) 
+        # Remove confirm_password if present
+        validated_data.pop('confirm_password', None)
+        
+        # Save user changes
+        user.save()
+        
+        # Update employee fields
+        return super().update(instance, validated_data) 

@@ -21,6 +21,9 @@ class Employee(models.Model):
     join_date = models.DateField()
     phone_number = models.CharField(max_length=15)
 
+    class Meta:
+        ordering = ['-join_date', 'user__username']  # Order by join date (newest first) and then username
+
     def __str__(self):
         return f"{self.user.get_full_name()}"
 

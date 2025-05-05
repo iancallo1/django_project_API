@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ..models import LeaveApproval, Leave
-from .leave import LeaveSerializer
+from .shared import LeaveBasicSerializer
 
 class LeaveApprovalInfoSerializer(serializers.ModelSerializer):
     approver_name = serializers.SerializerMethodField()
@@ -14,7 +14,7 @@ class LeaveApprovalInfoSerializer(serializers.ModelSerializer):
 
 class LeaveApprovalSerializer(serializers.ModelSerializer):
     approver_name = serializers.SerializerMethodField()
-    leave = LeaveSerializer(read_only=True)
+    leave = LeaveBasicSerializer(read_only=True)
     leave_id = serializers.PrimaryKeyRelatedField(
         queryset=Leave.objects.filter(status='pending'),
         source='leave',
