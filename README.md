@@ -1,12 +1,12 @@
 # Django Authentication API
 
-A robust authentication system built with Django and Django REST Framework, providing user management and authentication features for your application.
+This API is an authentication system built with Django and Django REST Framework, providing user leave management and authentication features.
 
 ## Features
 
 - Custom User Model with extended fields
 - User registration and authentication
-- Role-based access control (Employee and Manager roles)
+- Role-based access control (Employee and Admin roles)
 - RESTful API endpoints for user management
 - Password validation and confirmation
 - Secure password handling
@@ -14,10 +14,29 @@ A robust authentication system built with Django and Django REST Framework, prov
 
 ## Prerequisites
 
-- Python 3.x
-- Django
+- Python 3.14.0
+- Django 5.2
 - Django REST Framework
 - Virtual environment (recommended)
+
+## What I have Learned
+### API Development Concepts
+- implemented RESTful APIs using Django REST Framework (DRF)
+- understand the concept of ```serializers```
+- learned about API endpoints and URL routing 
+
+### Data Modeling
+- understand Django's ORM (Object-Relational Mapping)
+- created models for:
+  - Employees
+  - Authentication
+  - Leave management
+- Learn the importance of handling database migrations
+
+### Testing
+- learned about testing in Django 
+- understand the importance of writing tests for API endpoints
+
 
 ## Installation
 
@@ -103,7 +122,9 @@ Run the test suite:
 ```bash
 python manage.py test authentication
 ```
-
+```bash
+python manage.py test Apps.employees.tests.test_views
+```
 ## Security Features
 
 - Password validation using Django's built-in validators
