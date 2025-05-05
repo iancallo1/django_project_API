@@ -14,9 +14,9 @@ class UserModelTest(TestCase):
 
     def test_create_employee(self):
         employee = EmployeeFactory()
-        self.assertTrue(employee.is_employee)
-        self.assertFalse(employee.is_manager)
-        self.assertTrue(employee.check_password('testpass123'))
+        self.assertTrue(employee.user.is_employee)
+        self.assertFalse(employee.user.is_manager)
+        self.assertTrue(employee.user.check_password('testpass123'))
 
     def test_create_manager(self):
         manager = ManagerFactory()
